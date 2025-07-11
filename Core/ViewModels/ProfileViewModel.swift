@@ -9,10 +9,23 @@ class ProfileViewModel: ObservableObject {
         profile.goal = goal
         profile.meditationExperience = experience
         isQuestionnaireCompleted = true
-        // TODO: Save to CoreData/CloudKit
+        do {
+            try ProfileStorageService().save(profile: profile)
+        } catch {
+            print("Ошибка сохранения профиля: \(error)")
+        }
     }
     
     func loadHealthData() {
-        // TODO: Integrate with HealthKit
+        HealthKitManager().fetchHealthSummary { result in
+            switch result {
+            case .success(let summary):
+                DispatchQueue.main.async {
+                    self.profile.healthSummary = summary
+                }
+            case .failure(let error):
+                print("Ошибка загрузки данных HealthKit: \(error)")
+            }
+        }
     }
 }
